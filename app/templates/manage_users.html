@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Gestión de Usuarios - Fondo de Ahorro</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Fondo de Ahorro</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.admin_dashboard') }}">Inicio</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('main.manage_users') }}">Gestionar Usuarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.manage_ahorros') }}">Gestionar Ahorros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.reportes_ahorros') }}">Reportes</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="nav-link text-light">Bienvenido, {{ current_user.nombre }} {{ current_user.apellidos }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.logout') }}">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Gestión de Usuarios</h2>
+            <a href="{{ url_for('main.create_user') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Crear Usuario
+            </a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo ID</th>
+                                <th>Documento</th>
+                                <th>Nombre</th>
+                                <th>Apellidos</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if users %}
+                                {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.id }}</td>
+                                        <td>{{ user.tipo_ident or '-' }}</td>
+                                        <td>{{ user.documento }}</td>
+                                        <td>{{ user.nombre or '-' }}</td>
+                                        <td>{{ user.apellidos or '-' }}</td>
+                                        <td>{{ user.correo or '-' }}</td>
+                                        <td>{{ user.telefono or '-' }}</td>
+                                        <td>
+                                            {% if user.rol == 'administrativo' %}
+                                                <span class="badge badge-primary">Administrativo</span>
+                                            {% elif user.rol == 'ahorrador' %}
+                                                <span class="badge badge-success">Ahorrador</span>
+                                            {% else %}
+                                                <span class="badge badge-secondary">{{ user.rol or 'Sin rol' }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('main.edit_user', user_id=user.id) }}" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ user.id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Modal de confirmación para eliminar -->
+                                            <div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ user.id }}" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="deleteModalLabel{{ user.id }}">Confirmar eliminación</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            ¿Estás seguro que deseas eliminar al usuario <strong>{{ user.nombre }} {{ user.apellidos }}</strong>?
+                                                            <p class="text-danger mt-3">Esta acción no se puede deshacer.</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                                            <form action="{{ url_for('main.delete_user', user_id=user.id) }}" method="POST">
+                                                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center">No hay usuarios registrados</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> 

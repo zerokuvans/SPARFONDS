@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Reportes de Ahorros - Fondo de Ahorro</title>
+    <style>
+        .bg-light-success {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        .text-highlight {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Fondo de Ahorro</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.admin_dashboard') }}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.manage_users') }}">Gestionar Usuarios</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.manage_ahorros') }}">Gestionar Ahorros</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('main.reportes_ahorros') }}">Reportes</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <span class="nav-link text-light">Bienvenido, {{ current_user.nombre }} {{ current_user.apellidos }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.logout') }}">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Reportes de Ahorros</h2>
+            <div>
+                <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                </a>
+                <button onclick="window.print()" class="btn btn-info ml-2">
+                    <i class="fas fa-print"></i> Imprimir Reporte
+                </button>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">Resumen de Ahorros y Proyecciones</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p class="mb-0"><i class="fas fa-info-circle"></i> Este reporte muestra el acumulado de ahorros por usuario, el rendimiento calculado al <strong>{{ tasa_rendimiento }}%</strong> anual y la proyección estimada para un año completo.</p>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Documento</th>
+                                <th class="text-right">Total Ahorrado</th>
+                                <th class="text-right">Promedio Mensual</th>
+                                <th class="text-right">Rendimiento ({{ tasa_rendimiento }}%)</th>
+                                <th class="text-right">Proyección Anual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if datos_reporte %}
+                                {% for dato in datos_reporte %}
+                                    <tr>
+                                        <td>{{ dato.usuario.nombre }} {{ dato.usuario.apellidos }}</td>
+                                        <td>{{ dato.usuario.documento }}</td>
+                                        <td class="text-right">${{ "{:,.0f}".format(dato.total_ahorrado) }}</td>
+                                        <td class="text-right">${{ "{:,.0f}".format(dato.promedio_mensual) }}</td>
+                                        <td class="text-right text-success">${{ "{:,.0f}".format(dato.rendimiento) }}</td>
+                                        <td class="text-right font-weight-bold">${{ "{:,.0f}".format(dato.proyeccion_anual) }}</td>
+                                    </tr>
+                                {% endfor %}
+                                <tr class="bg-light-success">
+                                    <td colspan="2" class="font-weight-bold">TOTALES</td>
+                                    <td class="text-right font-weight-bold">
+                                        ${{ "{:,.0f}".format(datos_reporte|sum(attribute='total_ahorrado')) }}
+                                    </td>
+                                    <td class="text-right font-weight-bold">
+                                        ${{ "{:,.0f}".format(datos_reporte|sum(attribute='promedio_mensual')) }}
+                                    </td>
+                                    <td class="text-right text-highlight">
+                                        ${{ "{:,.0f}".format(datos_reporte|sum(attribute='rendimiento')) }}
+                                    </td>
+                                    <td class="text-right text-highlight">
+                                        ${{ "{:,.0f}".format(datos_reporte|sum(attribute='proyeccion_anual')) }}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">No hay datos de ahorros disponibles</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Notas sobre el Rendimiento</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>El rendimiento se calcula aplicando una tasa del <strong>{{ tasa_rendimiento }}%</strong> anual sobre el monto total ahorrado.</li>
+                            <li>Esta tasa es fija y se aplica al final del período.</li>
+                            <li>El rendimiento mostrado es una estimación y puede variar según las políticas del fondo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Notas sobre la Proyección</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li>La proyección anual se calcula considerando el ritmo actual de ahorro del usuario.</li>
+                            <li>Se asume que el usuario continuará ahorrando al mismo ritmo mensual.</li>
+                            <li>La proyección incluye el rendimiento calculado al {{ tasa_rendimiento }}% sobre el total proyectado.</li>
+                            <li>Esta proyección es estimativa y está sujeta a cambios según el comportamiento real del ahorro.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">© 2025 Fondo de Ahorro - Todos los derechos reservados</p>
+            <p class="small text-muted mb-0">Fecha de generación: {{ fecha_actual.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html> 

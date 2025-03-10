@@ -1,0 +1,37 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de configuración con información sensible
+.env
+*.env
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribución y empaquetado
+dist/
+build/
+*.egg-info/
+
+# Archivos de log
+*.log
+
+# Archivos locales de base de datos
+*.db
+*.sqlite
+
+# Carpetas específicas de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db 
