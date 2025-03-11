@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Iniciar Sesión - Fondo de Ahorro</title>
+    <title>Iniciar Sesión - Fondo Sparfonds</title>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center mt-5">
             <div class="col-md-6">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Fondo Sparfonds" style="max-width: 180px;">
+                </div>
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h3 class="text-center">Iniciar Sesión</h3>
+                        <h3 class="text-center">Login</h3>
                     </div>
                     <div class="card-body">
                         {% with messages = get_flashed_messages(with_categories=true) %}
